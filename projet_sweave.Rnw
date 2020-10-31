@@ -1,0 +1,403 @@
+\documentclass[11pt,french,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage{babel}
+\usepackage{color}
+\usepackage{pdfcolmk}
+\usepackage[babel=true]{csquotes} 
+
+\makeatletter\@addtoreset{section}{part}\makeatother
+\renewcommand{\thepart}{\arabic{part}}
+\renewcommand{\thesection}{\thepart.\arabic{section}}
+
+
+
+\begin{document}
+\setcounter{page}{2}
+\tableofcontents
+\renewcommand{\thesection}{\Alph{section}}
+\renewcommand{\thesection}{\roman{section}}
+\SweaveOpts{concordance=TRUE}
+
+\newpage
+\part{Introduction}
+\section*{Introduction}
+        \title{Introduction}
+        
+
+
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{formatcom = {\color[rgb]{0, 0, 0.56}}}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{formatcom = {\color[rgb]{0.56, 0, 0}}}
+
+<<options, echo = FALSE>>=
+options(prompt = " ", continue = " ", width = 85)
+@
+
+L’analyse en composantes principales consiste à transformer des variables liées entre elles en nouvelles variables décorrélées les unes des autres. 
+Ces nouvelles variables sont nommées "composantes principales", ou axes principaux. Elle permet au praticien de réduire le nombre de variables et de rendre l’information moins redondante.
+\newline
+\newline
+
+Mathématiquement, l’analyse en composantes principales est un simple changement de base : passer d’une représentation dans la des facteurs dêfinis par les vecteurs propres de la matrice des corrélations.
+ 
+\textbf{ Jeux de données}
+\newline
+Les données utilisées ici dans mon projet sont disponibles dans le paquet ade4, il s’agit du jeux de données ”seconde” qui contient les notes de 8 matières (nos variables) pour 22 étudiants. 
+Les 8 variables sont :
+\newline
+\newline
+\textbf{HGEO :} Histoire géographie \newline
+\textbf{FRAN :} Français 
+\newline
+\textbf{PHYS :} Physiques
+\newline
+\textbf{MATH :} Mathématiques 
+\newline
+\textbf{BIOL :} Biologie 
+\newline
+\textbf{ECON :} Économie 
+\newline
+\textbf{ANGL :} Anglais 
+\newline
+\textbf{ESPA :} Langue espagnole
+
+
+\newpage
+\part{Statistiques élémentaires}
+        \section*{Statistiques élémentaires}
+        \subsection{Statistiques decriprtives}
+            \title{Statistiques decriprtives}
+
+
+
+
+
+<<essai2plus2>>=
+library(ade4) #echo=false
+library(FactoMineR)
+
+library("factoextra")
+data(seconde)
+
+summary(seconde) 
+@
+
+\begin{tabular}{|l|r|c|}
+\hline
+  Variable & Moyenne & Ecart type \tabularnewline
+\hline
+  HGEO & 12.23182 & 1.813281 \tabularnewline
+\hline
+  FRAN & 10.13636 & 1.870713 \tabularnewline
+\hline
+  PHYS & 8.531818 & 3.925907 \tabularnewline
+\hline
+  MATH & 9.322727 & 3.351749 \tabularnewline
+\hline
+  BIOL & 11.17727 & 1.519377 \tabularnewline
+\hline
+  ECON & 11.18182 & 2.933978 \tabularnewline
+\hline
+  ANGL & 10.22727 & 2.428635 \tabularnewline
+\hline
+  ESPA & 13.87727 & 1.796539 \tabularnewline
+\hline
+
+  FRAN & 10.13636 & 1.870713 \tabularnewline
+\hline
+\end{tabular}
+\newline
+\newline
+
+La moyenne de cet échantillon de 22 étudiants en Biologie et en économie sont presque identiques ( 11.17727 pour la biologie et 11.18182 pour l’économie) or la valeur de l'écart type en économie est plus élevé que la valeur en biologie donc les notes en économie sont plus distribuées autour de la moyenne que les notes en biologie.
+
+La moyenne des notes des étudiants en mathématiques est 9.322727, l'écart type vaut 3.351749, donc les notes sont largement distribués autour de la moyenne, et donc leurs niveau en mathématiques n’est pas le même certains étudiants sont beacoup plus bon en mathématiques que les autres (la note maximale est 18.8 et la note minimale est 3.7)
+
+  \subsection{Résultat de la corrélation}
+             \title{Résultat de la corrélation}
+
+<<essai2plus2>>=
+Mcorrel=cor(seconde[,1:6])
+Mcorrel
+@
+
+C’est la matrice de variance covariance des variables centrées réduites.Elle possède p valeurs propres.
+\newline
+Le coefficient de corrélation nous donne deux informations que l'on doit interpréter :
+\newline
+- \textbf{le sens de la relation entre les variables :} si le coefficient est négatif, plus la valeur de la première variable est élevé, plus la valeur de la deuxième diminue.
+\newline
+- \textbf{la force de la relation :} En examinant la valeur de chaque coefficient, nous pouvons dire que l'effet de la relation entre deux variables est de grande taille et que l'assocciation est très forte, ou bien le contraire.
+\newline
+\newline
+
+On remarque que le coefficient de corrélation entre la variable "PHYS" (physique) et la variable "MATH" (Mathematiques) est positive, donc les deux variable sont positivement corrélées, elle varient dans le même sens, de plus le coefficient vaut 0,6981611 donc elles sont fortement corrélées. On peut dire les étudiants qui ont des bonnes notes en mathématiques tendent à avoir des bonnes notes en physique. C'est le cas aussi pour les deux variables "FRAN" et "HGEO".
+\newline
+Les deux variables "PHYS" et "ESPA" sont corrélées négativement donc plus un étudiant est bon en physique, il sera moins bon en espagnole. 
+\newline
+
+
+
+\part{Choix et Nombre d'axes factoriels à retenir}
+\section*{Choix et Nombre d'axes factoriels à retenir}
+        \subsection{Table des Valeurs propres et vecteurs propres}
+
+        \title{Choix et nombre d'axes factoriels à retenir}
+
+Les valeurs propres permettent d'effectuer un choix du nombre de composantes principales à retenir pour l'interprétation.
+\newline
+
+\textbf{Le choix du nombre d'axes à interpréter se fait sur la base de règles.}
+\newline
+
+- \textbf{La règle de Kaiser :} Elle consiste à retenir les axes pour lequels les valeurs propres sont supérieures à 1 (1 étant la moyenne de l'ensemble des valeurs propres). Il est à noter qu'on peut aussi avoir des résultats d'ACP dont la somme des valeurs propres n'est pas égale à p (nombre de variable) (cas de l'ACP non réduite). Dans ce cas, il faut adapter cette règle de Kaiser et retenir les valeurs propres supérieures à la moyenne des valeurs propres, et non plus à 1.
+
+<<essai2plus2>>=
+pca<- PCA(seconde,scale.unit=TRUE,ncp = 4, graph = FALSE)
+names(pca)
+pca$eig
+@
+
+
+- \textbf{La règle de l'éboulis :} Elle consiste à retenir les 2 premiers axes au moins, puis de "couper" l'éboulis des valeurs propres entre les valeurs propres dont la différence est maximum.
+
+<<eboulis,echo = T, fig = T>>=
+#eboulis
+inertie<-pca$eig/sum(pca$eig)*100
+barplot(pca$eig[,1],ylab="% d'inertie")
+title("Éboulis des valeurs propres en %")
+
+@
+ 
+
+ - \textbf{La règle de l'éboulis combineée avec celle de Kaiser est une des meilleurs. En effet, on commence par regarder combien de valeurs propres sont supérieures à la moyenne. Puis on regarde si la dernière valeur propre retenue (supérieure à la moyenne) est suffisament éloignée de celle qui la suit (inférieure à la moyenne).Si oui, on reste sur la décision de la règle de Kaiser, si non, on coupera au saut plus important le plus près.}
+\newline
+\newline
+\textbf{Dans notre, on a appliqué la règle de l'éboulis combineée avec celle de Kaiser
+Dans notre exmple,le nombre de variables p=8, est bien la somme des valeurs propres. on retiendra donc 2 axes pour l'interprétation.
+le premier et le deuxième axe comportent respectivement 43.65 et 18.62 de l'inertie totale du nuage, et le plan (1,2) totalise 62.29 \% de cette variance totale.}
+
+\newpage
+\part{Étude des individus : Résultats sous R}
+    \section*{Étude des individus : Résultats sous R}
+        \subsection{Coordonnées des individus, contribution et qualité de la représentation d'un individu}
+          \title{Coordonnées des individus, contribution et qualité de la représentation d'un individu}
+ 
+ De même, nous stockons le résultat dans une variable, ainsi nous pourrons avoir les coordonnées des individus mais ainsi la qualité de contribution sur chacun des axes.
+
+\textbf{Résultats des individus :}
+ 
+<<Resultats des individus,echo = T>>=
+res.ind= pca$ind
+res.ind$coord # coordonnées
+@
+
+On remarque que ce sont les étudiants 8 et 10 et 15 qui sont les plus représentatifs positivement avec le première axe et les étudiants 19 et 21 et 4 et 21 et 1 qui sont les plus représentatifs négativement.
+
+On remarque que ce sont les étudiants 9 et 11 et 15 qui sont les plus représentatifs positivement avec le deuxième  axe et les étudiants 12 et 18 et 10 ...  qui sont les plus représentatifs négativement.
+
+
+ Elle permet de verifier que tous les individus sont bien représentés par le sous-espace principal choisi ; elle s'exprime comme le carré du cosinus de l'angle entre les individus et sa projection orthogonale.
+ 
+Pour chaque axe retenu et chaque nuage, on regarde Quels sont les individus qui participent le plus à la formation de l’axe.
+Il faut s’assurer que les points contribuant le plus a` l’axe sont bien représentés sur l’axe (sinon il faut les mettre en éléments supplémentaires.)
+
+\textbf{Contribution :}
+
+<<Contribution,echo = T>>=
+# Contribution des individus aux axes factoriels
+pca$ind$contrib
+@
+Pour l’axe 1 : Les individus 9, 4, 10 et 21 participent le plus à la création de l’axe du côté positif. En effet les variables contribuent toutes dans le même sens à la formation de l'axe pour l'axe 2 : Les individus 11, 12, 15, et 9 participent le plus à la création de l'axe du coté positif.
+les variables sont toutes du même côté de l'axe.
+
+\newpage
+
+\textbf{ Qualité de représentation des individus :}
+
+<<Qualité,echo = T>>=
+# Qualité de représentation des individus
+
+pca$ind$cos2 
+@
+Pour la qualité, il faut s'assurer que le cosinus carré supérieure à 0.5.
+
+\newpage
+
+\part{Études des variables : Résultats sous R}                \section*{Études des variables : Résultats sous R}
+        
+        \subsection{Détermination des variables expliquantle mieux un axe donnée}
+          \title{Détermination des variables expliquantle mieux un axe donnée}
+          
+Lorsque l'on a beaucoup de variables, une description automatique des axes par les variables est possible à l'aide de cette commande pour le plan (1,2)
+<<echo = T>>=
+dimdesc(pca, axes=c(1,2))
+@
+        
+La détermination des variables expliquant chacun des axes est réalisée en examinant leurs coordonnées (table des valeurs propres ) qui sont elle-même reliées à leur contribution.
+-Les variables les plus corrélées à la première dimension sont dans l'ordre : \textbf{HGEO, PHYS, FRAN, MATH}.
+-Les variables les plus corrélées à la deuxième dimension sont dans l'ordre : \textbf{ESPA, ANGL, BIOL}
+        \subsection{Cercle de corrélation, représentations graphiques}
+          \title{Cercle de corrélation, représentations graphiques}
+
+
+C’est une représentation où, pour deux composantes principales, par exemple c1 et c2, on représente chaque variable z j par un point d’abscisse cor(z j , c1) et d’ordonnée cor(z j , c2). 
+          
+Les deux premières dimensions contiennent 50\% de l’inertie totale (l’inertie est la variance totale du tableau de données, i.e. la trace de la matrice de corrélation).
+
+<<cercle,echo = T, fig = T>>=
+z<- dudi.pca(seconde, center = T, scale = T, scannf = F)
+
+plot.PCA(pca, axes=c(1, 2), choix="var")
+
+@
+
+
+
+
+
+<<essai2plus2,echo = T, fig = F>>=
+
+
+pca$var$cos2  # Qualités de représentation des variables
+
+pca$var$contrib #Correlation des variables avec les axes
+
+@
+
+\newpage
+\part{Conclusion ACP }
+         \section*{Conclusion ACP }
+         \subsection{Interprétation des axes : synthèse}
+            \title{Interprétation des axes :
+            synthèse}
+            
+  
+L’interprétation des nouvelles variables (des axes factoriel) se fera à l’aide des individus et variables contribuant le plus à l’axe avec la règle suivante :
+
+si une variable a une forte contribution positive à l’axe, les individus ayant une forte contribution positive à l’axe sont caractérisés par une valeur élevée de la variable.
+
+On donne un sens à un axe à partir des coordonnées des variables et des individus.
+Les résultats obtenus dans les chapitres précedents montrent que :
+
+1. Les variables "PHYS" et "MATH" sont les plus corrélées positivement à la première dimension et que sont les variables "ESPA" et "ANGL" les plus corrélées à la deuxième dimension. 
+
+donc l'axe DIM1 oppose les matières scientifique(Mathématiques, Physiques, Biologie) aux matières économique et littéraire. l'axe 2 oppose les deux matières Anglais et Espagnole.
+
+
+
+2. Les individus (2, 6,..)contribuent à la première dimension et les individus (11,12) contribuent le plus à la deuxième dimension.
+
+3. Ces individus (2, 6,..) sont bien représentés sur les axe.
+
+\textbf{les deux axes donc opposent les matières scientifique contre les matière littéraire }
+\newline
+EX: L’étudiant 12 a des notes en (Mathématiques, physique, biologie) plus élévées que les notes (anglais, espagnole, francais)
+
+On peut aussi diviser le premier plan factoriel en quatre parties :
+- Des étudiants qui sont plus bon en (Mathématiques, physique, biologie) que en (Histoire géographie, Français, Économie) + ils sont plus bon en Anglais que l’espagnole. 
+
+- Des étudiants qui sont plus bon en (Mathématiques, physique, biologie) que en (Histoire géographie, Français, Économie) + ils sont plus bon en Espagnole que en anglais. 
+- Des étudiants qui sont plus bon en (Histoire géographie, Français, Economie) que en (Mathématiques, physique, biologie) + ils sont plus bon en Anglais que l’espagnole. 
+
+- Des étudiants qui sont plus bon en (Histoire géographie, Français, Économie) que en (Mathématiques, physique, biologie) + ils sont plus bon en Espagnole que en anglais.
+
+
+
+
+
+\newpage
+\part{Classification ascendante hiérarchique}
+         \section*{Classification ascendante hiérarchique}
+            \title{Classification ascendante hiérarchique}
+            
+<<e1,echo = T, fig = F>>=
+
+res=HCPC(pca, graph = FALSE)
+@
+
+\textbf{Dendogramme qui suggére 3 classes}
+
+<<e2,echo = T, fig = T>>=
+fviz_dend(res, cex = 0.7, palette = "jco", rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+rect_border = "jco",           # Rectangle color
+labels_track_height = 0.8      # Augment the room for labels
+)
+
+
+
+
+@
+
+-le dendrogramme fournit une classification des éléments lorsque l'on se donne une
+" hauteur de coupe " de l'arbre.
+
+-Plus l'arbre est coupé " bas " (proche des éléments initiaux) plus la classification obtenue est fine.
+
+-Une hauteur de coupe est pertinente si elle se trouve entre 2 noeuds dont les hauteurs sont " relativement " éloignées.
+
+\textbf{Les classes sur les plans factoriels}
+
+<<e3,echo = T, fig = T>>=
+
+fviz_cluster(res,repel = TRUE, show.clust.cent = TRUE, # Show cluster centers
+palette = "jco",ggtheme = theme_minimal(),main = "Factor map"
+)
+
+
+@
+
+\textbf{Représentation 3D}
+
+<<e4,echo = T, fig = T>>=
+
+plot(res, choice = "3D.map")
+
+
+@
+\textbf{Les variables qui décrivent le plus les classes}
+<<>>=
+res$desc.var$quanti
+@
+
+\textbf{Les composantes qui sont le plus associées aux classes
+}
+<<>>=
+res$desc.axes$quanti
+@
+
+\textbf{Les individus qui représent le plus les classes
+}
+<<>>=
+res$desc.ind$para
+@
+
+\textbf{K-means classif}
+<<>>=
+data("seconde")
+dataf <- scale(seconde)
+head(dataf)
+@
+
+\textbf{Distance basée sur les corrélations
+}
+<<>>=
+dist <- get_dist(dataf, method = "pearson")
+@
+
+\textbf{visualisation}
+<<>>=
+fviz_dist(dist, lab_size = 8)
+@
+
+\textbf{K-means}
+
+<<>>=
+km=eclust(dataf, "kmeans", nstart = 25)
+km
+@
+
+
+\end{document}
